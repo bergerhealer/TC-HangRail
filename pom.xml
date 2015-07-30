@@ -45,13 +45,14 @@
       <artifactId>TrainCarts</artifactId>
       <version>1.74-SNAPSHOT</version>
       <scope>provided</scope>
-	  </dependency>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
+  </dependencies>
 
   <!-- Build -->
   <build>
