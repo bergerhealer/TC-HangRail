@@ -1,5 +1,6 @@
 package com.bergerkiller.bukkit.hangrail;
 
+import com.bergerkiller.bukkit.common.wrappers.BlockData;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -15,8 +16,8 @@ import com.bergerkiller.bukkit.tc.rails.type.RailTypeRegular;
 public class RailTypeHanging extends RailTypeHorizontal {
 
 	@Override
-	public boolean isRail(int typeId, int data) {
-		return typeId == Material.IRON_FENCE.getId();
+	public boolean isRail(BlockData blockData) {
+		return blockData.getType() == Material.IRON_FENCE;
 	}
 
 	@Override
