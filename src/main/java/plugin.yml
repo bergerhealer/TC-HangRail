@@ -1,8 +1,8 @@
 name: TCHangRail
 main: com.bergerkiller.bukkit.hangrail.TCHangRail
 version: ${project.version}
-authors: [bergerkiller, lenis0012, timstans]
+authors: [bergerkiller]
 description: Add-on for TrainCarts that allows specific Blocks to perform certain actions
-depend: [Train Carts]
+depend: [Train_Carts]
 metrics: true
 dev-url: ${project.url}

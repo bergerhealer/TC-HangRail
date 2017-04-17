@@ -7,6 +7,7 @@ import org.bukkit.block.BlockFace;
 
 import com.bergerkiller.bukkit.common.bases.IntVector3;
 import com.bergerkiller.bukkit.common.utils.FaceUtil;
+import com.bergerkiller.bukkit.common.wrappers.BlockData;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.rails.logic.RailLogic;
 import com.bergerkiller.bukkit.tc.rails.type.RailTypeHorizontal;
@@ -15,8 +16,8 @@ import com.bergerkiller.bukkit.tc.rails.type.RailTypeRegular;
 public class RailTypeHanging extends RailTypeHorizontal {
 
 	@Override
-	public boolean isRail(int typeId, int data) {
-		return typeId == Material.IRON_FENCE.getId();
+	public boolean isRail(BlockData blockData) {
+		return blockData.getType() == Material.IRON_FENCE;
 	}
 
 	@Override
@@ -50,11 +51,7 @@ public class RailTypeHanging extends RailTypeHorizontal {
 
 	@Override
 	public Block findMinecartPos(Block trackBlock) {
-		if (findSlope(trackBlock) == null) {
-			return trackBlock.getRelative(0, -2, 0);
-		} else {
-			return trackBlock.getRelative(0, -3, 0);
-		}
+	    return trackBlock.getRelative(0, -2, 0);
 	}
 
 	@Override
