@@ -4,7 +4,7 @@
 
   <groupId>com.bergerkiller.bukkit</groupId>
   <artifactId>TCHangRail</artifactId>
-  <version>1.0</version>
+  <version>1.11.2-v1</version>
   <packaging>jar</packaging>
 
   <name>TCActionBlocks</name>
@@ -18,7 +18,7 @@
     <!-- Repo for access to Bukkit -->
     <repository>
       <id>spigotmc-repo</id>
-      <url>http://hub.spigotmc.org/nexus/content/groups/public</url>
+      <url>https://hub.spigotmc.org/nexus/content/groups/public</url>
     </repository>
     <!-- Repo for access to BKCommonLib -->
     <repository>
@@ -31,19 +31,19 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
-      <version>1.8.7-R0.1-SNAPSHOT</version>
+      <version>1.11.2-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.bergerkiller.bukkit</groupId>
       <artifactId>BKCommonLib</artifactId>
-      <version>1.66-SNAPSHOT</version>
+      <version>1.11.2-v1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.bergerkiller.bukkit</groupId>
       <artifactId>TrainCarts</artifactId>
-      <version>1.74-SNAPSHOT</version>
+      <version>1.11.2-v1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
