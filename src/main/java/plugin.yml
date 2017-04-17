@@ -4,5 +4,4 @@ version: ${project.version}
 authors: [bergerkiller, lenis0012, timstans]
 description: Add-on for TrainCarts that allows specific Blocks to perform certain actions
 depend: [Train Carts]
-metrics: true
 dev-url: ${project.url}
