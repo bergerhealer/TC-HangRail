@@ -1,93 +1,123 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.bergerkiller.bukkit</groupId>
-  <artifactId>TCHangRail</artifactId>
-  <version>1.11.2-v1</version>
-  <packaging>jar</packaging>
+    <groupId>com.bergerkiller.bukkit</groupId>
+    <artifactId>TCHangRail</artifactId>
+    <version>1.11.2-v1</version>
+    <packaging>jar</packaging>
 
-  <name>TCHangRail</name>
-  <url>https://github.com/bergerhealer/tc-hangrail/</url>
+    <name>TCHangRail</name>
+    <url>https://github.com/bergerhealer/tc-hangrail/</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.mcversion>v1_11_R1</project.mcversion>
-    <project.serverversion>1.11.2-R0.1</project.serverversion>
-    <project.bkcversion>1.11.2-v2-SNAPSHOT</project.bkcversion>
-    <project.tcversion>1.11.2-v2-SNAPSHOT</project.tcversion>
-  </properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.mcversion>v1_11_R1</project.mcversion>
+        <project.serverversion>1.11.2-R0.1</project.serverversion>
+        <project.bkcversion>1.11.2-v2-SNAPSHOT</project.bkcversion>
+        <project.tcversion>1.11.2-v2-SNAPSHOT</project.tcversion>
+    </properties>
 
-  <repositories>
-    <!-- Repo for access to Bukkit -->
-    <repository>
-      <id>spigot-repo</id>
-      <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
-    </repository>
+    <repositories>
+        <!-- Repo for access to Bukkit -->
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+        </repository>
 
-    <!-- Repo for access to BKCommonLib -->
-    <repository>
-      <id>mgdev-repo</id>
-      <url>https://maven.mg-dev.eu</url>
-    </repository>
+        <!-- Repo for access to BKCommonLib -->
+        <repository>
+            <id>mgdev-repo</id>
+            <url>https://maven.mg-dev.eu</url>
+        </repository>
 
-  </repositories>
+    </repositories>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.bukkit</groupId>
-        <artifactId>bukkit</artifactId>
-        <version>${project.serverversion}-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.bergerkiller.bukkit</groupId>
-      <artifactId>BKCommonLib</artifactId>
-      <version>${project.bkcversion}</version>
-      <scope>provided</scope>
-  	</dependency>
-  	<dependency>
-  	  <groupId>com.bergerkiller.bukkit</groupId>
-  	  <artifactId>TrainCarts</artifactId>
-  	  <version>${project.tcversion}</version>
-  	  <scope>provided</scope>
-  	</dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>${project.serverversion}-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.bergerkiller.bukkit</groupId>
+            <artifactId>BKCommonLib</artifactId>
+            <version>${project.bkcversion}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.bergerkiller.bukkit</groupId>
+            <artifactId>TrainCarts</artifactId>
+            <version>${project.tcversion}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-  <!-- Build -->
-  <build>
-	<!-- Resources (the filtering allows us to use project properties in plugin.yml) -->
-	<resources>
-      <resource>
-        <directory>src/main/java</directory>
-        <filtering>true</filtering>
-        <includes>
-          <include>plugin.yml</include>
-        </includes>
-      </resource>
-	</resources>
-	<defaultGoal>clean install</defaultGoal>
+    <!-- Build -->
+    <build>
+        <!-- Resources (the filtering allows us to use project properties in plugin.yml) -->
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>plugin.yml</include>
+                </includes>
+            </resource>
+        </resources>
+        <defaultGoal>clean install</defaultGoal>
 
-	<!-- Plugins -->
-	<plugins>
-	  <!-- Compiler plugin -->
-	  <plugin>
-	    <groupId>org.apache.maven.plugins</groupId>
-		<artifactId>maven-compiler-plugin</artifactId>
-		<version>2.4</version>
-		<configuration>
-		  <source>1.7</source>
-		  <target>1.7</target>
-		  <showWarnings>true</showWarnings>
-		  <showDeprecation>true</showDeprecation>
-		</configuration>
-      </plugin>
-    </plugins>
-  </build>
+        <!-- Plugins -->
+        <plugins>
+            <!-- Copy artifacts to non-versioned jar name -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <destFileName>${project.name}.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Compiler plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
