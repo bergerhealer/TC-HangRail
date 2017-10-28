@@ -74,16 +74,16 @@ public class RailTypeHanging extends RailTypeHorizontal {
         return this.logic_sloped[FaceUtil.faceToNotch(direction) >> 1];
     }
 
-	@Override
-	public boolean isRail(BlockData blockData) {
-		return (blockData.getType() == this.type) &&
-		       (this.data < 0 || blockData.getRawData() == this.data);
-	}
+    @Override
+    public boolean isRail(BlockData blockData) {
+        return (blockData.getType() == this.type) &&
+               (this.data < 0 || blockData.getRawData() == this.data);
+    }
 
-	@Override
-	public Block findRail(Block pos) {
-	    if (this.isBelowRail()) {
-	        // Minecart is below the rails, then the block most down has priority
+    @Override
+    public Block findRail(Block pos) {
+        if (this.isBelowRail()) {
+            // Minecart is below the rails, then the block most down has priority
             if (isRail(pos.getWorld(), pos.getX(), pos.getY() - this.offset, pos.getZ())) {
                 return pos.getRelative(0, -this.offset, 0);
             }
@@ -95,7 +95,7 @@ public class RailTypeHanging extends RailTypeHorizontal {
                     return rail;
                 }
             }
-	    } else {
+        } else {
             // Now check the rails at the offset position (horizontal)
             if (isRail(pos.getWorld(), pos.getX(), pos.getY() - this.offset, pos.getZ())) {
                 Block rail = pos.getRelative(0, -this.offset, 0);
@@ -108,75 +108,75 @@ public class RailTypeHanging extends RailTypeHorizontal {
             if (isRail(pos.getWorld(), pos.getX(), pos.getY() - this.offset - 1, pos.getZ())) {
                 return pos.getRelative(0, -this.offset - 1, 0);
             }
-	    }
-	    return null;
-	}
+        }
+        return null;
+    }
 
-	@Override
-	public IntVector3 findRail(MinecartMember<?> member, World world, IntVector3 pos) {
-	    // This is being phased out. Just call findRail(Block)
-	    Block rail = this.findRail(pos.toBlock(world));
-	    return (rail == null) ? null : new IntVector3(rail);
-	}
+    @Override
+    public IntVector3 findRail(MinecartMember<?> member, World world, IntVector3 pos) {
+        // This is being phased out. Just call findRail(Block)
+        Block rail = this.findRail(pos.toBlock(world));
+        return (rail == null) ? null : new IntVector3(rail);
+    }
 
-	@Override
-	public Block findMinecartPos(Block trackBlock) {
-	    return trackBlock.getRelative(0, this.offset, 0);
-	}
+    @Override
+    public Block findMinecartPos(Block trackBlock) {
+        return trackBlock.getRelative(0, this.offset, 0);
+    }
 
-	@Override
-	public Block getNextPos(Block currentTrack, BlockFace currentDirection) {
-	    BlockFace sloped = findSlope(currentTrack);
-	    if (sloped != null) {
-	        int slopeOffset = this.offset;
-	        if (this.isBelowRail()) {
-	            slopeOffset -= 1;
-	        }
-	        return RailTypeRegular.getNextPos(currentTrack.getRelative(0, slopeOffset, 0), currentDirection, sloped, true);
-	    }
+    @Override
+    public Block getNextPos(Block currentTrack, BlockFace currentDirection) {
+        BlockFace sloped = findSlope(currentTrack);
+        if (sloped != null) {
+            int slopeOffset = this.offset;
+            if (this.isBelowRail()) {
+                slopeOffset -= 1;
+            }
+            return RailTypeRegular.getNextPos(currentTrack.getRelative(0, slopeOffset, 0), currentDirection, sloped, true);
+        }
 
         BlockFace dir = getHorizontalDirection(currentTrack);
         if (dir == BlockFace.SELF) {
             dir = currentDirection;
         }
         return RailTypeRegular.getNextPos(currentTrack.getRelative(0, this.offset, 0), currentDirection, dir, false);
-	}
+    }
 
-	@Override
-	public BlockFace[] getPossibleDirections(Block trackBlock) {
-		return RailTypeRegular.getPossibleDirections(getDirection(trackBlock));
-	}
+    @Override
+    public BlockFace[] getPossibleDirections(Block trackBlock) {
+        return RailTypeRegular.getPossibleDirections(getDirection(trackBlock));
+    }
 
-	@Override
-	public BlockFace getSignColumnDirection(Block railsBlock) {
-		return BlockFace.UP;
-	}
+    @Override
+    public BlockFace getSignColumnDirection(Block railsBlock) {
+        return BlockFace.UP;
+    }
 
-	@Override
-	public BlockFace getDirection(Block railsBlock) {
-		BlockFace sloped = findSlope(railsBlock);
-		return sloped == null ? getHorizontalDirection(railsBlock) : sloped;
-	}
+    @Override
+    public BlockFace getDirection(Block railsBlock) {
+        BlockFace sloped = findSlope(railsBlock);
+        return sloped == null ? getHorizontalDirection(railsBlock) : sloped;
+    }
 
-	@Override
-	public RailLogic getLogic(MinecartMember<?> member, Block railsBlock) {
-		BlockFace sloped = findSlope(railsBlock);
-		if (sloped != null) {
-			return this.getLogicSloped(sloped);
-		}
-		// Check what sides have a connecting hanging rail
-		BlockFace dir = getHorizontalDirection(railsBlock);
-		if (dir == BlockFace.SELF) {
-			// Use the Minecart direction to figure this one out
-			// This is similar to the Crossing rail type
-			dir = FaceUtil.toRailsDirection(member.getDirectionTo());
-		}
-		return this.getLogicHorizontal(dir);
-	}
+    @Override
+    public RailLogic getLogic(MinecartMember<?> member, Block railsBlock) {
+        BlockFace sloped = findSlope(railsBlock);
+        if (sloped != null) {
+            return this.getLogicSloped(sloped);
+        }
+        // Check what sides have a connecting hanging rail
+        BlockFace dir = getHorizontalDirection(railsBlock);
+        if (dir == BlockFace.SELF) {
+            // Use the Minecart direction to figure this one out
+            // This is similar to the Crossing rail type
+            dir = FaceUtil.toRailsDirection(member.getDirectionTo());
+        }
+        return this.getLogicHorizontal(dir);
+    }
 
-	private BlockFace findSlope(Block railsBlock) {
-	    if (this.isBelowRail()) {
-	        // Minecart is below the rails ('hang rail')
+    private BlockFace findSlope(Block railsBlock) {
+        if (this.isBelowRail()) {
+            // Minecart is below the rails ('hang rail')
             // Do sloped logic specific to that, here
             Block below = railsBlock.getRelative(BlockFace.DOWN);
             for (BlockFace face : FaceUtil.AXIS) {
@@ -187,8 +187,8 @@ public class RailTypeHanging extends RailTypeHorizontal {
                     }
                 }
             }
-	    } else {
-	        // Minecart is above the rails ('floating rail')
+        } else {
+            // Minecart is above the rails ('floating rail')
             // Do sloped logic specific to that, here.
             Block above = railsBlock.getRelative(BlockFace.UP);
             for (BlockFace face : FaceUtil.AXIS) {
@@ -199,51 +199,51 @@ public class RailTypeHanging extends RailTypeHorizontal {
                     }
                 }
             }
-	    }
-		return null;
-	}
+        }
+        return null;
+    }
 
-	private BlockFace getHorizontalDirection(Block railsBlock) {
-		boolean north = isRail(railsBlock, BlockFace.NORTH);
-		boolean east = isRail(railsBlock, BlockFace.EAST);
-		boolean south = isRail(railsBlock, BlockFace.SOUTH);
-		boolean west = isRail(railsBlock, BlockFace.WEST);
-		// X-crossing: use direction we came from
-		if (north && south && east && west) {
-			return BlockFace.SELF;
-		}
-		// NORTH and SOUTH only
-		if (north && south) {
-			return BlockFace.NORTH;
-		}
-		// EAST and WEST only
-		if (east && west) {
-			return BlockFace.EAST;
-		}
-		// Along NORTH-EAST
-		if (north && east) {
-			return BlockFace.SOUTH_WEST;
-		}
-		// Along NORTH-WEST
-		if (north && west) {
-			return BlockFace.SOUTH_EAST;
-		}
-		// Along SOUTH-EAST
-		if (south && east) {
-			return BlockFace.NORTH_WEST;
-		}
-		// Along SOUTH-WEST
-		if (south && west) {
-			return BlockFace.NORTH_EAST;
-		}
-		// See if there is one possible neighbor
-		if (north || south) {
-			return BlockFace.NORTH;
-		}
-		if (east || west) {
-			return BlockFace.EAST;
-		}
-		// No neighbors at all - stick to the direction we came from
-		return BlockFace.SELF;
-	}
+    private BlockFace getHorizontalDirection(Block railsBlock) {
+        boolean north = isRail(railsBlock, BlockFace.NORTH);
+        boolean east = isRail(railsBlock, BlockFace.EAST);
+        boolean south = isRail(railsBlock, BlockFace.SOUTH);
+        boolean west = isRail(railsBlock, BlockFace.WEST);
+        // X-crossing: use direction we came from
+        if (north && south && east && west) {
+            return BlockFace.SELF;
+        }
+        // NORTH and SOUTH only
+        if (north && south) {
+            return BlockFace.NORTH;
+        }
+        // EAST and WEST only
+        if (east && west) {
+            return BlockFace.EAST;
+        }
+        // Along NORTH-EAST
+        if (north && east) {
+            return BlockFace.SOUTH_WEST;
+        }
+        // Along NORTH-WEST
+        if (north && west) {
+            return BlockFace.SOUTH_EAST;
+        }
+        // Along SOUTH-EAST
+        if (south && east) {
+            return BlockFace.NORTH_WEST;
+        }
+        // Along SOUTH-WEST
+        if (south && west) {
+            return BlockFace.NORTH_EAST;
+        }
+        // See if there is one possible neighbor
+        if (north || south) {
+            return BlockFace.NORTH;
+        }
+        if (east || west) {
+            return BlockFace.EAST;
+        }
+        // No neighbors at all - stick to the direction we came from
+        return BlockFace.SELF;
+    }
 }

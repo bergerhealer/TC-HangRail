@@ -15,10 +15,10 @@ import com.bergerkiller.bukkit.tc.rails.type.RailType;
 public class TCHangRail extends JavaPlugin {
     private final List<RailTypeHanging> hangingTypes = new ArrayList<RailTypeHanging>();
 
-	@Override
-	public void onEnable() {
-	    // Load rail type configuration
-	    FileConfiguration config = new FileConfiguration(this);
+    @Override
+    public void onEnable() {
+        // Load rail type configuration
+        FileConfiguration config = new FileConfiguration(this);
         config.load();
         if (!config.contains("types")) {
             ConfigurationNode fence = config.getNode("types").getNode("1");
@@ -47,13 +47,13 @@ public class TCHangRail extends JavaPlugin {
             this.hangingTypes.add(rail);
         }
         config.save();
-	}
+    }
 
-	@Override
-	public void onDisable() {
-	    for (RailTypeHanging hanging : this.hangingTypes) {
-	        RailType.unregister(hanging);
-	    }
-	    this.hangingTypes.clear();
-	}
+    @Override
+    public void onDisable() {
+        for (RailTypeHanging hanging : this.hangingTypes) {
+            RailType.unregister(hanging);
+        }
+        this.hangingTypes.clear();
+    }
 }
