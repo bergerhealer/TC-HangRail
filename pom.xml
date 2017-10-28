@@ -4,7 +4,7 @@
 
     <groupId>com.bergerkiller.bukkit</groupId>
     <artifactId>TCHangRail</artifactId>
-    <version>1.11.2-v1</version>
+    <version>1.12.2-v1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>TCHangRail</name>
@@ -14,8 +14,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.mcversion>v1_11_R1</project.mcversion>
         <project.serverversion>1.11.2-R0.1</project.serverversion>
-        <project.bkcversion>1.11.2-v2-SNAPSHOT</project.bkcversion>
-        <project.tcversion>1.11.2-v2-SNAPSHOT</project.tcversion>
+        <project.bkcversion>1.11.2-v1</project.bkcversion>
+        <project.tcversion>1.12.2-v1</project.tcversion>
     </properties>
 
     <repositories>
@@ -25,12 +25,11 @@
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
 
-        <!-- Repo for access to BKCommonLib -->
+        <!-- Repo for access to BKCommonLib, TrainCarts -->
         <repository>
-            <id>mgdev-repo</id>
-            <url>https://maven.mg-dev.eu</url>
+            <id>MG-Dev Jenkins CI Maven Repository</id>
+            <url>https://ci.mg-dev.eu/plugin/repository/everything</url>
         </repository>
-
     </repositories>
 
     <dependencies>
