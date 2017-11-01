@@ -149,7 +149,7 @@ public class RailTypeHanging extends RailTypeHorizontal {
 
     @Override
     public BlockFace getSignColumnDirection(Block railsBlock) {
-        return BlockFace.UP;
+        return this.isBelowRail() ? BlockFace.UP : BlockFace.DOWN;
     }
 
     @Override
