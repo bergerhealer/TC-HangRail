@@ -159,7 +159,7 @@ public class RailTypeHanging extends RailTypeHorizontal {
     }
 
     @Override
-    public RailLogic getLogic(MinecartMember<?> member, Block railsBlock) {
+    public RailLogic getLogic(MinecartMember<?> member, Block railsBlock, BlockFace direction) {
         BlockFace sloped = findSlope(railsBlock);
         if (sloped != null) {
             return this.getLogicSloped(sloped);
