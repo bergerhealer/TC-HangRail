@@ -169,7 +169,7 @@ public class RailTypeHanging extends RailTypeHorizontal {
         if (dir == BlockFace.SELF) {
             // Use the Minecart direction to figure this one out
             // This is similar to the Crossing rail type
-            dir = FaceUtil.toRailsDirection(member.getDirectionTo());
+            dir = FaceUtil.toRailsDirection(direction);
         }
         return this.getLogicHorizontal(dir);
     }
