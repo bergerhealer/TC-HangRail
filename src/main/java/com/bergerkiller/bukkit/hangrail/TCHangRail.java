@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.common.config.ConfigurationNode;
@@ -32,6 +33,9 @@ public class TCHangRail extends JavaPlugin {
         config.addHeader("types", "Block data can be specified using a colon (:), for example 'WOOL:RED'");
         config.addHeader("types", "Omitting data means data of the block is ignored entirely");
         config.addHeader("types", "The offset is up/down relative to the block. >0=above, <0=below");
+        config.addHeader("types", "The sign offset is up/down relative to the block trains see signs");
+        config.addHeader("types", "The sign direction specifies in what direction trains look for signs for this rails");
+        config.addHeader("types", "A sign direction of SELF (default) uses UP/DOWN based on the offset of the Minecart");
         ConfigurationNode types = config.getNode("types");
 
         for (ConfigurationNode type : types.getNodes()) {
@@ -42,7 +46,9 @@ public class TCHangRail extends JavaPlugin {
                 continue;
             }
             int offset = type.get("offset", -2);
-            RailTypeHanging rail = new RailTypeHanging(block.getType(), block.getData(), offset);
+            int signOffset = type.get("signOffset", 0);
+            BlockFace signDirection = type.get("signDirection", BlockFace.SELF);
+            RailTypeHanging rail = new RailTypeHanging(block.getType(), block.getData(), offset, signOffset, signDirection);
             RailType.register(rail, false);
             this.hangingTypes.add(rail);
         }

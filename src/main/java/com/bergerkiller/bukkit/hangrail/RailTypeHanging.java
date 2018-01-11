@@ -17,13 +17,21 @@ public class RailTypeHanging extends RailTypeHorizontal {
     private final Material type;
     private final int data;
     private final int offset;
+    private final int signOffset;
+    private final BlockFace signDirection;
     private final RailLogicHangingSloped[] logic_sloped;
     private final RailLogicHanging[] logic_horizontal;
 
-    public RailTypeHanging(Material type, int data, int offset) {
+    public RailTypeHanging(Material type, int data, int offset, int signOffset, BlockFace signDirection) {
         this.type = type;
         this.data = data;
         this.offset = offset;
+        this.signOffset = signOffset;
+        if (signDirection == BlockFace.SELF) {
+            this.signDirection = this.isBelowRail() ? BlockFace.UP : BlockFace.DOWN;
+        } else {
+            this.signDirection = signDirection;
+        }
 
         this.logic_sloped = new RailLogicHangingSloped[4];
         for (int i = 0; i < 4; i++) {
@@ -149,7 +157,16 @@ public class RailTypeHanging extends RailTypeHorizontal {
 
     @Override
     public BlockFace getSignColumnDirection(Block railsBlock) {
-        return this.isBelowRail() ? BlockFace.UP : BlockFace.DOWN;
+        return this.signDirection;
+    }
+
+    @Override
+    public Block getSignColumnStart(Block railsBlock) {
+        if (this.signOffset == 0) {
+            return railsBlock;
+        } else {
+            return railsBlock.getRelative(0, this.signOffset, 0);
+        }
     }
 
     @Override
