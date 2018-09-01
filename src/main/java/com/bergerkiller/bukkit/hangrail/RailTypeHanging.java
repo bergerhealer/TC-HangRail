@@ -1,11 +1,9 @@
 package com.bergerkiller.bukkit.hangrail;
 
-import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
-import com.bergerkiller.bukkit.common.bases.IntVector3;
+import com.bergerkiller.bukkit.common.inventory.ItemParser;
 import com.bergerkiller.bukkit.common.utils.FaceUtil;
 import com.bergerkiller.bukkit.common.wrappers.BlockData;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
@@ -14,17 +12,15 @@ import com.bergerkiller.bukkit.tc.rails.type.RailTypeHorizontal;
 import com.bergerkiller.bukkit.tc.rails.type.RailTypeRegular;
 
 public class RailTypeHanging extends RailTypeHorizontal {
-    private final Material type;
-    private final int data;
+    private final ItemParser typeInfo;
     private final int offset;
     private final int signOffset;
     private final BlockFace signDirection;
     private final RailLogicHangingSloped[] logic_sloped;
     private final RailLogicHanging[] logic_horizontal;
 
-    public RailTypeHanging(Material type, int data, int offset, int signOffset, BlockFace signDirection) {
-        this.type = type;
-        this.data = data;
+    public RailTypeHanging(ItemParser typeInfo, int offset, int signOffset, BlockFace signDirection) {
+        this.typeInfo = typeInfo;
         this.offset = offset;
         this.signOffset = signOffset;
         if (signDirection == BlockFace.SELF) {
@@ -84,8 +80,7 @@ public class RailTypeHanging extends RailTypeHorizontal {
 
     @Override
     public boolean isRail(BlockData blockData) {
-        return (blockData.getType() == this.type) &&
-               (this.data < 0 || blockData.getRawData() == this.data);
+        return typeInfo.match(blockData);
     }
 
     @Override
@@ -121,33 +116,8 @@ public class RailTypeHanging extends RailTypeHorizontal {
     }
 
     @Override
-    public IntVector3 findRail(MinecartMember<?> member, World world, IntVector3 pos) {
-        // This is being phased out. Just call findRail(Block)
-        Block rail = this.findRail(pos.toBlock(world));
-        return (rail == null) ? null : new IntVector3(rail);
-    }
-
-    @Override
     public Block findMinecartPos(Block trackBlock) {
         return trackBlock.getRelative(0, this.offset, 0);
-    }
-
-    @Override
-    public Block getNextPos(Block currentTrack, BlockFace currentDirection) {
-        BlockFace sloped = findSlope(currentTrack);
-        if (sloped != null) {
-            int slopeOffset = this.offset;
-            if (this.isBelowRail()) {
-                slopeOffset -= 1;
-            }
-            return RailTypeRegular.getNextPos(currentTrack.getRelative(0, slopeOffset, 0), currentDirection, sloped, true);
-        }
-
-        BlockFace dir = getHorizontalDirection(currentTrack);
-        if (dir == BlockFace.SELF) {
-            dir = currentDirection;
-        }
-        return RailTypeRegular.getNextPos(currentTrack.getRelative(0, this.offset, 0), currentDirection, dir, false);
     }
 
     @Override

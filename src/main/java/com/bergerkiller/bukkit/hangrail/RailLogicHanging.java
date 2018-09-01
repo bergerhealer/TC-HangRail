@@ -3,7 +3,7 @@ package com.bergerkiller.bukkit.hangrail;
 import org.bukkit.block.BlockFace;
 import org.bukkit.util.Vector;
 
-import com.bergerkiller.bukkit.common.bases.IntVector3;
+import com.bergerkiller.bukkit.tc.controller.components.RailPath;
 import com.bergerkiller.bukkit.tc.rails.logic.RailLogicHorizontal;
 
 public class RailLogicHanging extends RailLogicHorizontal {
@@ -15,9 +15,9 @@ public class RailLogicHanging extends RailLogicHorizontal {
     }
 
     @Override
-    public void getFixedPosition(Vector position, IntVector3 railPos) {
-        super.getFixedPosition(position, railPos);
-        position.setY(position.getY() + (double) this.rail.getOffset());
+    protected RailPath createPath() {
+        Vector offset = new Vector(0.0, this.rail.getOffset(), 0.0);
+        return RailPath.offset(super.createPath(), offset);
     }
 
 }

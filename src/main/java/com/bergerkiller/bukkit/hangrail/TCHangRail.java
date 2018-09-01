@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,14 +22,16 @@ public class TCHangRail extends JavaPlugin {
         config.load();
         if (!config.contains("types")) {
             ConfigurationNode fence = config.getNode("types").getNode("1");
-            fence.set("block", Material.IRON_FENCE.toString());
+            fence.set("block", "IRON_FENCE");
             fence.set("offset", -2);
         }
 
         config.setHeader("types", "Define the block types and their applied offsets that will act as hang rails");
         config.addHeader("types", "The key of each block is ignored, and can be set to anything you like");
         config.addHeader("types", "For each type the block and offset settings can be configured");
-        config.addHeader("types", "Block data can be specified using a colon (:), for example 'WOOL:RED'");
+        config.addHeader("types", "Legacy block data can be specified using a colon (:), for example 'WOOL:RED'");
+        config.addHeader("types", "Similarly, to specify all data variants of a legacy type, you can use 'WOOL:'");
+        config.addHeader("types", "Running on Minecraft 1.13 and later, new material names may replace legacy ones");
         config.addHeader("types", "Omitting data means data of the block is ignored entirely");
         config.addHeader("types", "The offset is up/down relative to the block. >0=above, <0=below");
         config.addHeader("types", "The sign offset is up/down relative to the block trains see signs");
@@ -48,7 +49,7 @@ public class TCHangRail extends JavaPlugin {
             int offset = type.get("offset", -2);
             int signOffset = type.get("signOffset", 0);
             BlockFace signDirection = type.get("signDirection", BlockFace.SELF);
-            RailTypeHanging rail = new RailTypeHanging(block.getType(), block.getData(), offset, signOffset, signDirection);
+            RailTypeHanging rail = new RailTypeHanging(block, offset, signOffset, signDirection);
             RailType.register(rail, false);
             this.hangingTypes.add(rail);
         }

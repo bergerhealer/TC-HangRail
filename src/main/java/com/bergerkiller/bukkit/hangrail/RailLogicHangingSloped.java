@@ -3,7 +3,7 @@ package com.bergerkiller.bukkit.hangrail;
 import org.bukkit.block.BlockFace;
 import org.bukkit.util.Vector;
 
-import com.bergerkiller.bukkit.common.bases.IntVector3;
+import com.bergerkiller.bukkit.tc.controller.components.RailPath;
 import com.bergerkiller.bukkit.tc.rails.logic.RailLogicSloped;
 
 public class RailLogicHangingSloped extends RailLogicSloped {
@@ -15,13 +15,12 @@ public class RailLogicHangingSloped extends RailLogicSloped {
     }
 
     @Override
-    public void getFixedPosition(Vector position, IntVector3 railPos) {
-        super.getFixedPosition(position, railPos);
+    protected RailPath createPath() {
+        Vector offset = new Vector(0.0, this.rail.getOffset(), 0.0);
         if (this.rail.isBelowRail()) {
-            position.setY(position.getY() + (double) this.rail.getOffset() - 1.0);
-        } else {
-            position.setY(position.getY() + (double) this.rail.getOffset());
+            offset.setY(offset.getY() - 1.0);
         }
+        return RailPath.offset(super.createPath(), offset);
     }
 
 }
