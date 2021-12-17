@@ -169,7 +169,7 @@ public class RailTypeHanging extends RailTypeHorizontal {
             for (BlockFace face : FaceUtil.AXIS) {
                 if (isRail(below, face)) {
                     // Check that the block below is not blocked (pillar)
-                    if (!isRail(below.getRelative(face.getModX(), -1, face.getModZ()))) {
+                    if (!isRailVert(below, face, -1)) {
                         return face.getOppositeFace();
                     }
                 }
@@ -181,13 +181,20 @@ public class RailTypeHanging extends RailTypeHorizontal {
             for (BlockFace face : FaceUtil.AXIS) {
                 if (isRail(above, face)) {
                     // Check that the block above is not blocked (pillar)
-                    if (!isRail(above.getRelative(face.getModX(), 1, face.getModZ()))) {
+                    if (!isRailVert(above, face, 1)) {
                         return face;
                     }
                 }
             }
         }
         return null;
+    }
+
+    private final boolean isRailVert(Block block, BlockFace offset, int dy) {
+        return isRail(block.getWorld(),
+                block.getX() + offset.getModX(),
+                block.getY() + dy,
+                block.getZ() + offset.getModZ());
     }
 
     private BlockFace getHorizontalDirection(Block railsBlock) {
@@ -222,6 +229,30 @@ public class RailTypeHanging extends RailTypeHorizontal {
         // Along SOUTH-WEST
         if (south && west) {
             return BlockFace.NORTH_EAST;
+        }
+        // Curve towards a downwards slope
+        // Do check the direction we came from isn't also a downwards slope
+        if (north || south) {
+            east = isRailVert(railsBlock, BlockFace.EAST, -1);
+            west = isRailVert(railsBlock, BlockFace.WEST, -1);
+            if (east != west) {
+                if (north) {
+                    return east ? BlockFace.SOUTH_WEST : BlockFace.SOUTH_EAST;
+                } else {
+                    return east ? BlockFace.NORTH_WEST : BlockFace.NORTH_EAST;
+                }
+            }
+        }
+        if (east || west) {
+            north = isRailVert(railsBlock, BlockFace.NORTH, -1);
+            south = isRailVert(railsBlock, BlockFace.SOUTH, -1);
+            if (north != south) {
+                if (east) {
+                    return north ? BlockFace.SOUTH_WEST : BlockFace.NORTH_WEST;
+                } else {
+                    return north ? BlockFace.SOUTH_EAST : BlockFace.NORTH_EAST;
+                }
+            }
         }
         // See if there is one possible neighbor
         if (north || south) {
