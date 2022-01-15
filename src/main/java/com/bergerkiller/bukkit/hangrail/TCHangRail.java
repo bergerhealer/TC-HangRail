@@ -13,10 +13,14 @@ import com.bergerkiller.bukkit.common.inventory.ItemParser;
 import com.bergerkiller.bukkit.tc.rails.type.RailType;
 
 public class TCHangRail extends JavaPlugin {
+    private final JunctionStateMap junctionStateMap = new JunctionStateMap(this);
     private final List<RailTypeHanging> hangingTypes = new ArrayList<RailTypeHanging>();
 
     @Override
-    public void onEnable() {
+    public void onLoad() {
+        // Load junction states
+        this.junctionStateMap.load();
+
         // Load rail type configuration
         FileConfiguration config = new FileConfiguration(this);
         config.load();
@@ -49,11 +53,16 @@ public class TCHangRail extends JavaPlugin {
             int offset = type.get("offset", -2);
             int signOffset = type.get("signOffset", 0);
             BlockFace signDirection = type.get("signDirection", BlockFace.SELF);
-            RailTypeHanging rail = new RailTypeHanging(block, offset, signOffset, signDirection);
+            RailTypeHanging rail = new RailTypeHanging(junctionStateMap, block, offset, signOffset, signDirection);
             RailType.register(rail, false);
             this.hangingTypes.add(rail);
         }
         config.save();
+    }
+
+    @Override
+    public void onEnable() {
+        this.junctionStateMap.startSavingIfChanged();
     }
 
     @Override
@@ -62,5 +71,6 @@ public class TCHangRail extends JavaPlugin {
             RailType.unregister(hanging);
         }
         this.hangingTypes.clear();
+        this.junctionStateMap.shutdown();
     }
 }

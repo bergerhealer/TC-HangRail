@@ -1,5 +1,8 @@
 package com.bergerkiller.bukkit.hangrail;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
@@ -8,11 +11,13 @@ import com.bergerkiller.bukkit.common.inventory.ItemParser;
 import com.bergerkiller.bukkit.common.utils.FaceUtil;
 import com.bergerkiller.bukkit.common.wrappers.BlockData;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
+import com.bergerkiller.bukkit.tc.controller.components.RailJunction;
+import com.bergerkiller.bukkit.tc.controller.components.RailPath;
 import com.bergerkiller.bukkit.tc.rails.logic.RailLogic;
 import com.bergerkiller.bukkit.tc.rails.type.RailTypeHorizontal;
-import com.bergerkiller.bukkit.tc.rails.type.RailTypeRegular;
 
 public class RailTypeHanging extends RailTypeHorizontal {
+    private final JunctionStateMap junctionMap;
     private final ItemParser typeInfo;
     private final int offset;
     private final int signOffset;
@@ -20,7 +25,8 @@ public class RailTypeHanging extends RailTypeHorizontal {
     private final RailLogicHangingSloped[] logic_sloped;
     private final RailLogicHanging[] logic_horizontal;
 
-    public RailTypeHanging(ItemParser typeInfo, int offset, int signOffset, BlockFace signDirection) {
+    public RailTypeHanging(JunctionStateMap junctionMap, ItemParser typeInfo, int offset, int signOffset, BlockFace signDirection) {
+        this.junctionMap = junctionMap;
         this.typeInfo = typeInfo;
         this.offset = offset;
         this.signOffset = signOffset;
@@ -122,11 +128,6 @@ public class RailTypeHanging extends RailTypeHorizontal {
     }
 
     @Override
-    public BlockFace[] getPossibleDirections(Block trackBlock) {
-        return RailTypeRegular.getPossibleDirections(getDirection(trackBlock));
-    }
-
-    @Override
     public BlockFace getSignColumnDirection(Block railsBlock) {
         return this.signDirection;
     }
@@ -143,7 +144,76 @@ public class RailTypeHanging extends RailTypeHorizontal {
     @Override
     public BlockFace getDirection(Block railsBlock) {
         BlockFace sloped = findSlope(railsBlock);
-        return sloped == null ? getHorizontalDirection(railsBlock) : sloped;
+        return sloped == null ? getHorizontalDirection(railsBlock, BlockFace.SELF) : sloped;
+    }
+
+    @Override
+    public BlockFace[] getPossibleDirections(Block trackBlock) {
+        return this.findPossibleJunctionFaces(trackBlock).getFaces();
+    }
+
+    @Override
+    public List<RailJunction> getJunctions(Block railBlock) {
+        // For slopes we also use the logic path to find the two ends
+        // This generally will never be reached, so whatever
+        BlockFace slopeFace = this.findSlope(railBlock);
+        if (slopeFace != null) {
+            RailPath slopedPath = this.getLogicSloped(slopeFace).getPath();
+            if (slopeFace == BlockFace.NORTH) {
+                slopeFace = BlockFace.SOUTH;
+            } else if (slopeFace == BlockFace.WEST) {
+                slopeFace = BlockFace.EAST;
+            }
+
+            List<RailJunction> result = new ArrayList<>(2);
+            result.add(new RailJunction(faceToJuncName(slopeFace), slopedPath.getEndPosition()));
+            result.add(new RailJunction(faceToJuncName(slopeFace.getOppositeFace()), slopedPath.getStartPosition()));
+            return result;
+        }
+
+        // Retrieve known possible directions and turn them into junctions
+        BlockFaceSet faceSet = this.findPossibleJunctionFaces(railBlock);
+        List<RailJunction> result = new ArrayList<>(faceSet.getFaces().length);
+        if (faceSet.north()) result.add(new RailJunction("n", getLogicHorizontal(BlockFace.NORTH).getPath().getStartPosition()));
+        if (faceSet.east()) result.add(new RailJunction("e", getLogicHorizontal(BlockFace.EAST).getPath().getEndPosition()));
+        if (faceSet.south()) result.add(new RailJunction("s", getLogicHorizontal(BlockFace.NORTH).getPath().getEndPosition()));
+        if (faceSet.west()) result.add(new RailJunction("w", getLogicHorizontal(BlockFace.EAST).getPath().getStartPosition()));
+        return result;
+    }
+
+    @Override
+    public void switchJunction(Block railBlock, RailJunction fromJunc, RailJunction toJunc) {
+        junctionMap.set(railBlock, juncToFace(fromJunc), juncToFace(toJunc));
+    }
+
+    private static final BlockFace juncToFace(RailJunction junction) {
+        switch (junction.name()) {
+        case "n":
+            return BlockFace.NORTH;
+        case "e":
+            return BlockFace.EAST;
+        case "s":
+            return BlockFace.SOUTH;
+        case "w":
+            return BlockFace.WEST;
+        default:
+            return BlockFace.NORTH;
+        }
+    }
+
+    private static final String faceToJuncName(BlockFace face) {
+        switch (face) {
+        case NORTH:
+            return "n";
+        case EAST:
+            return "e";
+        case SOUTH:
+            return "s";
+        case WEST:
+            return "w";
+        default:
+            return "1";
+        }
     }
 
     @Override
@@ -153,7 +223,7 @@ public class RailTypeHanging extends RailTypeHorizontal {
             return this.getLogicSloped(sloped);
         }
         // Check what sides have a connecting hanging rail
-        BlockFace dir = getHorizontalDirection(railsBlock);
+        BlockFace dir = getHorizontalDirection(railsBlock, direction);
         if (dir == BlockFace.SELF) {
             // Use the Minecart direction to figure this one out
             // This is similar to the Crossing rail type
@@ -232,7 +302,7 @@ public class RailTypeHanging extends RailTypeHorizontal {
         return result;
     }
 
-    private BlockFace getHorizontalDirection(Block railsBlock) {
+    private BlockFace getHorizontalDirection(Block railsBlock, BlockFace movingDirection) {
         BlockFaceSet faceSet = findPossibleJunctionFaces(railsBlock);
         BlockFace[] faces = faceSet.getFaces();
 
@@ -273,7 +343,45 @@ public class RailTypeHanging extends RailTypeHorizontal {
             }
         }
 
-        //TODO: Ask junction map what direction to take here
+        // Ask junction map what direction to take here
+        JunctionStateMap.State junctionState = junctionMap.get(railsBlock);
+
+        // Verify both from and to are valid directions to take still
+        // The blocks may have changed since then
+        if (junctionState != null && (!faceSet.get(junctionState.from) || !faceSet.get(junctionState.to))) {
+            junctionState = null;
+            junctionMap.remove(railsBlock);
+        }
+
+        // Instead of using the default direction, pick what's been set here.
+        if (junctionState != null) {
+            if (junctionState.from == junctionState.to.getOppositeFace()) {
+                // Straight track. Make sure it's either EAST or NORTH.
+                defaultDirection = junctionState.to;
+                if (defaultDirection == BlockFace.WEST || defaultDirection == BlockFace.SOUTH) {
+                    defaultDirection = junctionState.from;
+                }
+            } else {
+                // Curved track. Combine and done.
+                return FaceUtil.combine(junctionState.from, junctionState.to).getOppositeFace();
+            }
+        }
+
+        // When taking a T-junction from the edge, returns an appropriate sub-
+        // cardinal direction.
+        if (defaultDirection == BlockFace.EAST) {
+            if (movingDirection == BlockFace.NORTH) {
+                return BlockFace.NORTH_WEST;
+            } else if (movingDirection == BlockFace.SOUTH) {
+                return BlockFace.SOUTH_WEST;
+            }
+        } else if (defaultDirection == BlockFace.NORTH) {
+            if (movingDirection == BlockFace.EAST) {
+                return BlockFace.SOUTH_EAST;
+            } else if (movingDirection == BlockFace.WEST) {
+                return BlockFace.SOUTH_WEST;
+            }
+        }
         return defaultDirection;
     }
 }
