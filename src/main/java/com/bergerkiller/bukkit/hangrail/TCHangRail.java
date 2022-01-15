@@ -1,6 +1,7 @@
 package com.bergerkiller.bukkit.hangrail;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -25,13 +26,13 @@ public class TCHangRail extends JavaPlugin {
         FileConfiguration config = new FileConfiguration(this);
         config.load();
         if (!config.contains("types")) {
-            ConfigurationNode fence = config.getNode("types").getNode("1");
+            ConfigurationNode fence = new ConfigurationNode();
             fence.set("block", "IRON_FENCE");
             fence.set("offset", -2);
+            config.set("types", Collections.singletonList(fence));
         }
 
         config.setHeader("types", "Define the block types and their applied offsets that will act as hang rails");
-        config.addHeader("types", "The key of each block is ignored, and can be set to anything you like");
         config.addHeader("types", "For each type the block and offset settings can be configured");
         config.addHeader("types", "Legacy block data can be specified using a colon (:), for example 'WOOL:RED'");
         config.addHeader("types", "Similarly, to specify all data variants of a legacy type, you can use 'WOOL:'");
@@ -41,9 +42,19 @@ public class TCHangRail extends JavaPlugin {
         config.addHeader("types", "The sign offset is up/down relative to the block trains see signs");
         config.addHeader("types", "The sign direction specifies in what direction trains look for signs for this rails");
         config.addHeader("types", "A sign direction of SELF (default) uses UP/DOWN based on the offset of the Minecart");
-        ConfigurationNode types = config.getNode("types");
 
-        for (ConfigurationNode type : types.getNodes()) {
+        config.addHeader("types", "\nExample configuration:");
+        config.addHeader("types", "types:\n" +
+                                  "  - block: IRON_FENCE\n" +
+                                  "    offset: -2\n" +
+                                  "    signOffset: 0\n" +
+                                  "    signDirection: SELF\n" +
+                                  "  - block: WOOL:RED\n" +
+                                  "    offset: 1\n" +
+                                  "    signOffset: 0\n" +
+                                  "    signDirection: DOWN");
+
+        for (ConfigurationNode type : config.getNodeList("types")) {
             String blockName = type.get("block", "MISSING");
             ItemParser block = ItemParser.parse(type.get("block", ""));
             if (!block.hasType()) {
