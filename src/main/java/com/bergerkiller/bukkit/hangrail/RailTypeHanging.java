@@ -3,6 +3,7 @@ package com.bergerkiller.bukkit.hangrail;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
+import com.bergerkiller.bukkit.common.collections.BlockFaceSet;
 import com.bergerkiller.bukkit.common.inventory.ItemParser;
 import com.bergerkiller.bukkit.common.utils.FaceUtil;
 import com.bergerkiller.bukkit.common.wrappers.BlockData;
@@ -197,71 +198,82 @@ public class RailTypeHanging extends RailTypeHorizontal {
                 block.getZ() + offset.getModZ());
     }
 
+    private BlockFaceSet findPossibleJunctionFaces(Block railsBlock) {
+        BlockFaceSet result = BlockFaceSet.NONE;
+        result = result.setNorth(isRail(railsBlock, BlockFace.NORTH));
+        result = result.setEast(isRail(railsBlock, BlockFace.EAST));
+        result = result.setSouth(isRail(railsBlock, BlockFace.SOUTH));
+        result = result.setWest(isRail(railsBlock, BlockFace.WEST));
+
+        // Curve towards a downwards or upwards slope in a T-split
+        boolean north_south = result.north() || result.south();
+        boolean east_west = result.east() || result.west();
+        if (north_south != east_west) {
+            if (isBelowRail()) {
+                // Rails block is bottommost block, check above
+                if (north_south) {
+                    result = result.setEast(isRailVert(railsBlock, BlockFace.EAST, 1));
+                    result = result.setWest(isRailVert(railsBlock, BlockFace.WEST, 1));
+                } else {
+                    result = result.setNorth(isRailVert(railsBlock, BlockFace.NORTH, 1));
+                    result = result.setSouth(isRailVert(railsBlock, BlockFace.SOUTH, 1));
+                }
+            } else {
+                // Rails block is topmost block, check below
+                if (north_south) {
+                    result = result.setEast(isRailVert(railsBlock, BlockFace.EAST, -1));
+                    result = result.setWest(isRailVert(railsBlock, BlockFace.WEST, -1));
+                } else {
+                    result = result.setNorth(isRailVert(railsBlock, BlockFace.NORTH, -1));
+                    result = result.setSouth(isRailVert(railsBlock, BlockFace.SOUTH, -1));
+                }
+            }
+        }
+        return result;
+    }
+
     private BlockFace getHorizontalDirection(Block railsBlock) {
-        boolean north = isRail(railsBlock, BlockFace.NORTH);
-        boolean east = isRail(railsBlock, BlockFace.EAST);
-        boolean south = isRail(railsBlock, BlockFace.SOUTH);
-        boolean west = isRail(railsBlock, BlockFace.WEST);
-        // X-crossing: use direction we came from
-        if (north && south && east && west) {
-            return BlockFace.SELF;
-        }
-        // NORTH and SOUTH only
-        if (north && south) {
-            return BlockFace.NORTH;
-        }
-        // EAST and WEST only
-        if (east && west) {
-            return BlockFace.EAST;
-        }
-        // Along NORTH-EAST
-        if (north && east) {
-            return BlockFace.SOUTH_WEST;
-        }
-        // Along NORTH-WEST
-        if (north && west) {
-            return BlockFace.SOUTH_EAST;
-        }
-        // Along SOUTH-EAST
-        if (south && east) {
-            return BlockFace.NORTH_WEST;
-        }
-        // Along SOUTH-WEST
-        if (south && west) {
-            return BlockFace.NORTH_EAST;
-        }
-        // Curve towards a downwards slope
-        // Do check the direction we came from isn't also a downwards slope
-        if (north || south) {
-            east = isRailVert(railsBlock, BlockFace.EAST, -1);
-            west = isRailVert(railsBlock, BlockFace.WEST, -1);
-            if (east != west) {
-                if (north) {
-                    return east ? BlockFace.SOUTH_WEST : BlockFace.SOUTH_EAST;
-                } else {
-                    return east ? BlockFace.NORTH_WEST : BlockFace.NORTH_EAST;
-                }
+        BlockFaceSet faceSet = findPossibleJunctionFaces(railsBlock);
+        BlockFace[] faces = faceSet.getFaces();
+
+        // Only one possible direction, go straight (north or east)
+        if (faces.length == 1) {
+            switch (faces[0]) {
+            case NORTH:
+            case SOUTH:
+                return BlockFace.NORTH;
+            case EAST:
+            case WEST:
+                return BlockFace.EAST;
+            default:
+                return faces[0]; // Never reached
             }
         }
-        if (east || west) {
-            north = isRailVert(railsBlock, BlockFace.NORTH, -1);
-            south = isRailVert(railsBlock, BlockFace.SOUTH, -1);
-            if (north != south) {
-                if (east) {
-                    return north ? BlockFace.SOUTH_WEST : BlockFace.NORTH_WEST;
-                } else {
-                    return north ? BlockFace.SOUTH_EAST : BlockFace.NORTH_EAST;
-                }
+
+        // By default go north or east if such a junction is encountered
+        BlockFace defaultDirection;
+        if (faces.length == 4) {
+            defaultDirection = BlockFace.SELF;
+        } else if (faceSet.north() && faceSet.south()) {
+            defaultDirection = BlockFace.NORTH;
+        } else if (faceSet.east() && faceSet.west()) {
+            defaultDirection = BlockFace.EAST;
+        } else {
+            defaultDirection = BlockFace.SELF; // Weird. Shouldn't happen.
+        }
+
+        // Only two possible directions, follow whatever this direction is
+        if (faces.length == 2) {
+            if (defaultDirection != BlockFace.SELF) {
+                // north + south -> south
+                return defaultDirection;
+            } else {
+                // north + west -> south_east
+                return FaceUtil.combine(faces[0], faces[1]).getOppositeFace();
             }
         }
-        // See if there is one possible neighbor
-        if (north || south) {
-            return BlockFace.NORTH;
-        }
-        if (east || west) {
-            return BlockFace.EAST;
-        }
-        // No neighbors at all - stick to the direction we came from
-        return BlockFace.SELF;
+
+        //TODO: Ask junction map what direction to take here
+        return defaultDirection;
     }
 }
