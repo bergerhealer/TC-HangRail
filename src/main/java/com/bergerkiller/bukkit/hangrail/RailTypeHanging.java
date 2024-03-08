@@ -3,6 +3,7 @@ package com.bergerkiller.bukkit.hangrail;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bergerkiller.bukkit.tc.controller.components.RailState;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
@@ -10,7 +11,6 @@ import com.bergerkiller.bukkit.common.collections.BlockFaceSet;
 import com.bergerkiller.bukkit.common.inventory.ItemParser;
 import com.bergerkiller.bukkit.common.utils.FaceUtil;
 import com.bergerkiller.bukkit.common.wrappers.BlockData;
-import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.controller.components.RailJunction;
 import com.bergerkiller.bukkit.tc.controller.components.RailPath;
 import com.bergerkiller.bukkit.tc.rails.logic.RailLogic;
@@ -217,18 +217,20 @@ public class RailTypeHanging extends RailTypeHorizontal {
     }
 
     @Override
-    public RailLogic getLogic(MinecartMember<?> member, Block railsBlock, BlockFace direction) {
-        BlockFace sloped = findSlope(railsBlock);
+    public RailLogic getLogic(RailState state) {
+        BlockFace sloped = findSlope(state.railBlock());
         if (sloped != null) {
             return this.getLogicSloped(sloped);
         }
+
         // Check what sides have a connecting hanging rail
-        BlockFace dir = getHorizontalDirection(railsBlock, direction);
+        BlockFace dir = getHorizontalDirection(state.railBlock(), state.enterFace());
         if (dir == BlockFace.SELF) {
             // Use the Minecart direction to figure this one out
             // This is similar to the Crossing rail type
-            dir = FaceUtil.toRailsDirection(direction);
+            dir = FaceUtil.toRailsDirection(state.enterFace());
         }
+
         return this.getLogicHorizontal(dir);
     }
 
@@ -302,13 +304,8 @@ public class RailTypeHanging extends RailTypeHorizontal {
         return result;
     }
 
-    private BlockFace getHorizontalDirection(Block railsBlock, BlockFace movingDirection) {
-        BlockFaceSet faceSet = findPossibleJunctionFaces(railsBlock);
-        BlockFace[] faces = faceSet.getFaces();
-
-        // Only one possible direction, go straight (north or east)
-        if (faces.length == 1) {
-            switch (faces[0]) {
+    private BlockFace getStraightDirection(BlockFace direction) {
+        switch (direction) {
             case NORTH:
             case SOUTH:
                 return BlockFace.NORTH;
@@ -316,8 +313,17 @@ public class RailTypeHanging extends RailTypeHorizontal {
             case WEST:
                 return BlockFace.EAST;
             default:
-                return faces[0]; // Never reached
-            }
+                return direction; // Never reached
+        }
+    }
+
+    private BlockFace getHorizontalDirection(Block railsBlock, BlockFace enterFace) {
+        BlockFaceSet faceSet = findPossibleJunctionFaces(railsBlock);
+        BlockFace[] faces = faceSet.getFaces();
+
+        // Only one possible direction, go straight (north or east)
+        if (faces.length == 1) {
+            return getStraightDirection(faces[0]);
         }
 
         // By default go north or east if such a junction is encountered
@@ -355,30 +361,42 @@ public class RailTypeHanging extends RailTypeHorizontal {
 
         // Instead of using the default direction, pick what's been set here.
         if (junctionState != null) {
-            if (junctionState.from == junctionState.to.getOppositeFace()) {
-                // Straight track. Make sure it's either EAST or NORTH.
-                defaultDirection = junctionState.to;
-                if (defaultDirection == BlockFace.WEST || defaultDirection == BlockFace.SOUTH) {
-                    defaultDirection = junctionState.from;
+            if (junctionState.from != junctionState.to.getOppositeFace()) {
+                // Curved track.
+
+                // If entering from one of the junction directions, follow the junction exactly
+                if (enterFace == junctionState.from.getOppositeFace() || enterFace == junctionState.to.getOppositeFace()) {
+                    return FaceUtil.combine(junctionState.from, junctionState.to).getOppositeFace();
                 }
-            } else {
-                // Curved track. Combine and done.
-                return FaceUtil.combine(junctionState.from, junctionState.to).getOppositeFace();
+
+                // Is straight into one of the selected junction directions otherwise
+                if (enterFace == junctionState.from || enterFace == junctionState.to) {
+                    return getStraightDirection(enterFace);
+                }
+
+                // Falls through defaulting to a straight path.
             }
+
+            // Assume Straight track. Make sure it's either EAST or NORTH.
+            defaultDirection = junctionState.to;
+            if (defaultDirection == BlockFace.WEST || defaultDirection == BlockFace.SOUTH) {
+                defaultDirection = junctionState.from;
+            }
+            defaultDirection = getStraightDirection(defaultDirection); // Just in case
         }
 
         // When taking a T-junction from the edge, returns an appropriate sub-
         // cardinal direction.
         if (defaultDirection == BlockFace.EAST) {
-            if (movingDirection == BlockFace.NORTH) {
+            if (enterFace == BlockFace.NORTH) {
                 return BlockFace.NORTH_WEST;
-            } else if (movingDirection == BlockFace.SOUTH) {
+            } else if (enterFace == BlockFace.SOUTH) {
                 return BlockFace.SOUTH_WEST;
             }
         } else if (defaultDirection == BlockFace.NORTH) {
-            if (movingDirection == BlockFace.EAST) {
+            if (enterFace == BlockFace.EAST) {
                 return BlockFace.SOUTH_EAST;
-            } else if (movingDirection == BlockFace.WEST) {
+            } else if (enterFace == BlockFace.WEST) {
                 return BlockFace.SOUTH_WEST;
             }
         }
