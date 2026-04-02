@@ -14,8 +14,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.mcversion>v1_11_R1</project.mcversion>
         <project.serverversion>1.11.2-R0.1</project.serverversion>
-        <project.bkcversion>1.20.4-v1</project.bkcversion>
-        <project.tcversion>1.20.4-v1</project.tcversion>
+        <project.bkcversion>2.0.0-SNAPSHOT</project.bkcversion>
+        <project.tcversion>2.0.0-SNAPSHOT</project.tcversion>
     </properties>
 
     <repositories>
